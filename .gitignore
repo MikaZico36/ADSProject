@@ -1,0 +1,17 @@
+# Ignorar todos os arquivos e pastas
+*
+
+# Exceto arquivos Python
+!*.py
+
+# Exceto README
+!README.md
+
+# Exceto o src
+!src/
+
+#exceto o .gitignore
+!.gitignore
+
+# Ignorar __pycache__ dentro de src
+src/__pycache__/
