@@ -1,34 +1,40 @@
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, request, jsonify
+from flask_wtf import FlaskForm
+from wtforms import FileField, SubmitField
+from werkzeug.utils import secure_filename
+import os
+from wtforms.validators import InputRequired
 import geopandas as gpd
 from shapely.geometry import MultiPolygon
 from shapely.wkt import loads
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'supersecretkey'
+app.config['UPLOAD_FOLDER'] = 'data_files/input_files'
 
-def read_gpkg(input_file, layer):
-    try:
-        gdf = gpd.read_file(input_file, layer=layer)
-        return gdf
-    except Exception as e:
-        print(f"Erro ao ler o ficheiro: {e}")
-        return None
+class UploadFileForm(FlaskForm):
+    file = FileField("File", validators=[InputRequired()])
+    submit = SubmitField("Upload File")
 
-@app.route('/upload', methods=['POST'])
+
+@app.route('/upload', methods=['GET','POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    if file:
-        file_path = f"uploads/{file.filename}"
-        file.save(file_path)
-        layer = request.form.get('layer', 'default_layer')  # You can specify the layer name in the form data
-        gdf = read_gpkg(file_path, layer)
-        if gdf is not None:
-            return gdf.to_json()
-        else:
-            return jsonify({"error": "Failed to read the GPKG file"}), 500
+    form = UploadFileForm()
+    if form.validate_on_submit():
+        file = form.file.data
+        filename = secure_filename(file.filename)
+        
+        # Verificar se o ficheiro tem a extensão .gpkg
+        if not filename.lower().endswith('.gpkg'):
+            return "Invalid file type. Only .gpkg files are allowed.", 400
+        
+        upload_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'])
+          
+        file_path = os.path.join(upload_folder, filename)
+        file.save(file_path)  # Then save the file
+        return "File has been uploaded."
+    return render_template('index.html', form=form)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
