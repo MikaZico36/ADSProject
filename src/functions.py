@@ -4,12 +4,13 @@ from shapely.geometry import MultiPolygon
 from shapely.wkt import loads
 from werkzeug.utils import secure_filename
 import os
+import fiona
 
 def save_file(file, upload_folder):
     filename = secure_filename(file.filename)
     
-    if not (filename.lower().endswith('.gpkg') or filename.lower().endswith('.xml')):
-        return "Invalid file type. Only .gpkg and .xml files are allowed.", 400
+    if not filename.lower().endswith('.gpkg') or filename.lower().endswith('.xml'):
+        return "Invalid file type. Only .gpkg files are allowed.", 400
     
     if not os.path.exists(upload_folder):
         os.makedirs(upload_folder)
@@ -17,16 +18,18 @@ def save_file(file, upload_folder):
     file_path = os.path.join(upload_folder, filename)
     file.save(file_path)  
     
-    return file_path
-    
 
-def list_layers(gpkg_file):
-    try:
-        layers = gpd.io.file.fiona.listlayers(gpkg_file)
-        return layers
-    except Exception as e:
-        print(f"Erro ao listar os layers: {e}")
-        return []
+    json_files = []
+    for layername in fiona.listlayers(file_path):
+        print(f"Layer: {layername}")
+        gdf = gpd.read_file(file_path, layer=layername)
+        json_path = os.path.join(upload_folder, f"{os.path.splitext(filename)[0]}_{layername}.json")
+        gdf.to_file(json_path, driver="GeoJSON")
+        json_files.append(json_path)
+
+    os.remove(file_path)
+    return json_files
+    
     
 
 def write_geometry_to_file(geometry, output_file):

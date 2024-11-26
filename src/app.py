@@ -8,6 +8,7 @@ from functions import *
 
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret_key'
 app.config['UPLOAD_FOLDER'] = 'data_files/input_files'
 
 class UploadFileForm(FlaskForm):
@@ -26,7 +27,6 @@ def list_files():
 
 
 @app.route('/upload', methods=['GET', 'POST'])
-@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     form = UploadFileForm()
     if form.validate_on_submit():
@@ -36,15 +36,7 @@ def upload_file():
         
         if isinstance(file_path, tuple):  # Verifica se houve erro no save_file
             return file_path
-        
-        # Usar a função list_layers se o ficheiro for .gpkg
-        if file.filename.lower().endswith('.gpkg'):
-            layers = list_layers(file_path)
-            if layers is not None:
-                return render_template('popup.html', message="File has been uploaded and layers listed successfully.")
-            else:
-                return render_template('popup.html', message="Failed to list layers in the GPKG file.")
-        
+         
         return render_template('popup.html', message="File has been uploaded.")
     return render_template('read_files.html', form=form)
 
