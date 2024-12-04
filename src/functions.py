@@ -13,7 +13,7 @@ def save_file(file, upload_folder):
     filename = secure_filename(file.filename)
     
     if not filename.lower().endswith('.gpkg') or filename.lower().endswith('.xml'):
-        return "Invalid file type. Only .gpkg files are allowed.", 400
+        return "Invalid file type. Only .gpkg or .xml files are allowed.", 400
     
     if not os.path.exists(upload_folder):
         os.makedirs(upload_folder)
@@ -21,7 +21,6 @@ def save_file(file, upload_folder):
     file_path = os.path.join(upload_folder, filename)
     file.save(file_path)  
     
-
     json_files = []
     for layername in fiona.listlayers(file_path):
         print(f"Layer: {layername}")
@@ -39,9 +38,12 @@ def load_geojson(path):
         return [shape(feature["geometry"]) for feature in json.load(f)["features"]]
 
 
-#source_geoms = load_geojson("src/data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson")
+def main():
+    source_geoms = load_geojson("data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson")
+    engine = AdjacencyEngine(source_geoms, **{"max_distance": 100})
+    adjacency_dict = engine.get_adjacency_dict()
+    print(adjacency_dict)
+    engine.plot_adjacency_dict()
 
-#engine = AdjacencyEngine(source_geoms, **{"max_distance": 100})
-#adjacency_dict = engine.get_adjacency_dict()
-#engine.plot_adjacency_dict()
-
+if __name__ == "__main__":
+    main()
