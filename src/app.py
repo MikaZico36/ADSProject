@@ -4,7 +4,7 @@ from wtforms import FileField, SubmitField
 from werkzeug.utils import secure_filename
 import os
 from wtforms.validators import InputRequired
-from functions import *
+from functions import save_file
 
 
 app = Flask(__name__)
@@ -24,7 +24,6 @@ def list_files():
     upload_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'])
     files = os.listdir(upload_folder)
     return render_template('list_files.html', files=files)
-
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
