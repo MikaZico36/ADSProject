@@ -40,26 +40,5 @@ def upload_file():
         return render_template('popup.html', message="File has been uploaded.")
     return render_template('read_files.html', form=form)
 
-
-@app.route('/process_file/<filename>', methods=['GET'])
-def process_file(filename):
-    upload_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), app.config['UPLOAD_FOLDER'])
-    file_path = os.path.join(upload_folder, filename)
-    
-    # Usar a função list_layers se o ficheiro for .gpkg
-    if filename.lower().endswith('.gpkg'):
-        layers = list_layers(file_path)
-        if layers is not None:
-            return jsonify({"layers": layers})
-        else:
-            return jsonify({"error": "Failed to list layers in the GPKG file"}), 500
-    
-    return "File has been selected."
-
-
-
-
-
-
 if __name__ == '__main__':
     app.run(debug=True)

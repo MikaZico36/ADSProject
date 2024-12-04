@@ -7,6 +7,7 @@ from geo_adjacency.adjacency import AdjacencyEngine
 import os
 import fiona
 import json
+import geojson
 
 def save_file(file, upload_folder):
     filename = secure_filename(file.filename)
@@ -38,7 +39,6 @@ def plot_multipolygon(multipolygon, crs):
     gdf_multipolygon.plot()
     plt.show()
 
-
 def check_neighbors(multipolygon1_wtk, multipolygon2_wtk):
     multipolygon1 = loads(multipolygon1_wtk)
     multipolygon2 = loads(multipolygon2_wtk)
@@ -52,10 +52,25 @@ def load_geojson(path):
     with open(path) as f:
         return [shape(feature["geometry"]) for feature in json.load(f)["features"]]
 
-source_geoms = load_geojson("data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson")
-print(source_geoms)
+def save_neighbors(data_list, file_name):
+    features = []
+    for key, neighbors in data_list.items():
+        feature = geojson.Feature(
+            geometry=geojson.Point((key, 0)),  # Exemplo de geometria, ajuste conforme necessário
+            properties={"neighbors": neighbors}
+        )
+        features.append(feature)
+    
+    feature_collection = geojson.FeatureCollection(features)
+    
+    file_path = os.path.join("src/data_files/output_files", file_name, ".geojson")
+    with open(file_path, 'w') as f:
+        geojson.dump(feature_collection, f)
+    
+    print(f"Vizinhos guardados com sucesso em {file_path}")
+
+source_geoms = load_geojson("src/data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson")
 
 engine = AdjacencyEngine(source_geoms, **{"max_distance": 100})
-print(engine)
 adjacency_dict = engine.get_adjacency_dict()
-engine.plot_adjacency_dict()
+save_neighbors(adjacency_dict, "neighbors")
