@@ -1,8 +1,3 @@
-sql_config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "",
-}
 neo4j_config = {
     "uri": "bolt://44.223.74.103:7687",
     "username": "neo4j",
