@@ -262,6 +262,67 @@ def get_owners():
     
     return owners
 
+def get_owner_with_properties_by_name(name):
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH (o:Owner {name: $name})-[:OWNS]->(p:Property)
+            RETURN o.owner_id AS owner_id, o.name AS owner_name, collect(p.object_id) AS properties
+            """,
+            name=name
+        ).single()
+
+    driver.close()
+
+    if result:
+        return {
+            "owner_id": result["owner_id"],
+            "owner_name": result["owner_name"],
+            "properties": result["properties"]
+        }
+    else:
+        return None
+    
+
+def get_property_with_adjacents(property_id):
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH (p:Property {object_id: $property_id})
+            OPTIONAL MATCH (p)-[:ADJACENT_TO]-(adjacent:Property)
+            RETURN p.object_id AS property_id, 
+                   p.name AS property_name, 
+                   collect(adjacent.object_id) AS adjacent_properties
+            """,
+            property_id=property_id
+        ).single()
+
+    driver.close()
+
+    if result:
+        return {
+            "property_id": result["property_id"],
+            "property_name": result["property_name"],
+            "adjacent_properties": result["adjacent_properties"]
+        }
+    else:
+        return None
+
+
+
+
+
+
+
+
+
+
+
+
 
 def main():
     file_path = "src/data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson"
