@@ -10,10 +10,8 @@ from neo4j import GraphDatabase
 from db_config import neo4j_config
 from concurrent.futures import ThreadPoolExecutor
 from names_generator import generate_name
-import time
 import random
-from collections import Counter
-
+import time
 
 
 def save_file(file, upload_folder):
@@ -39,8 +37,8 @@ def save_file(file, upload_folder):
 
     os.remove(file_path)
     return json_files
-  
-    
+
+
 def create_relationship_dictionay(file_path):
 
     with open(file_path) as f:
@@ -48,7 +46,6 @@ def create_relationship_dictionay(file_path):
 
     engine = AdjacencyEngine(source_geoms, **{"max_distance": 100})
     adjacency_dict = engine.get_adjacency_dict()
-    print("Dicionário de relacionamentos criado")
 
     return adjacency_dict
 
@@ -228,114 +225,16 @@ def create_ownership_relationships(distribution):
 
     driver.close()
 
-def get_owner_by_id(owner_id):
-    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
-
-    with driver.session() as session:
-        owner = session.run(
-            "MATCH (o:Owner {owner_id: $owner_id}) RETURN o.owner_id, o.name",
-            owner_id=owner_id
-        ).single()
-    driver.close()
-
-    return owner
-
-def get_owner_by_name(name):
-    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
-
-    with driver.session() as session:
-        owner = session.run(
-            "MATCH (o:Owner {name: $name}) RETURN o.owner_id, o.name",
-            name=name
-        ).single()
-    driver.close()
-
-    return owner
 
 
-def get_owners():
-    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
-
-    with driver.session() as session:
-        owners = session.run("MATCH (o:Owner) RETURN o.owner_id, o.name").data()
-    driver.close()
-    
-    return owners
-
-def get_owner_with_properties_by_name(name):
-    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
-
-    with driver.session() as session:
-        result = session.run(
-            """
-            MATCH (o:Owner {name: $name})-[:OWNS]->(p:Property)
-            RETURN o.owner_id AS owner_id, o.name AS owner_name, collect(p.object_id) AS properties
-            """,
-            name=name
-        ).single()
-
-    driver.close()
-
-    if result:
-        return {
-            "owner_id": result["owner_id"],
-            "owner_name": result["owner_name"],
-            "properties": result["properties"]
-        }
-    else:
-        return None
-    
-
-def get_property_with_adjacents(property_id):
-    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
-
-    with driver.session() as session:
-        result = session.run(
-            """
-            MATCH (p:Property {object_id: $property_id})
-            OPTIONAL MATCH (p)-[:ADJACENT_TO]-(adjacent:Property)
-            RETURN p.object_id AS property_id, 
-                   p.name AS property_name, 
-                   collect(adjacent.object_id) AS adjacent_properties
-            """,
-            property_id=property_id
-        ).single()
-
-    driver.close()
-
-    if result:
-        return {
-            "property_id": result["property_id"],
-            "property_name": result["property_name"],
-            "adjacent_properties": result["adjacent_properties"]
-        }
-    else:
-        return None
-
-
-
-
-
-
-
-
-
-
-
-
-
-def main():
+if __name__ == "__main__":
     file_path = "src/data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson"
 
     start = time.time()
-    #create_properties(file_path)
-    #create_property_relationships(file_path)
-    #create_owners(100)
+    create_properties(file_path)
+    create_property_relationships(file_path)
+    create_owners(100)
     create_ownership_relationships("user_choice")
-
 
     end = time.time()
     print(f"Tempo total: {end - start}")
-
-if __name__ == "__main__":
-    main()
