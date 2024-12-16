@@ -1,5 +1,5 @@
 from neo4j import GraphDatabase
-from db_config import neo4j_config
+from src.db_config import neo4j_config
 import time
 
 def get_owner_by_id(owner_id):
