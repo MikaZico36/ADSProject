@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.search_services import *
+from src.services.search_services import *
 
 search_blueprint = Blueprint('search_routes', __name__)
 
