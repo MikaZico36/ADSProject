@@ -1,9 +1,7 @@
 from re import search
 
 from flask import Blueprint, request, jsonify
-
-from src.services.search_services import *
-
+from services.search_services import *
 search_blueprint = Blueprint('search_routes', __name__)
 
 
@@ -17,6 +15,7 @@ def get_all_owners():
 
 @search_blueprint.route('/owners/<int:owner_id>', methods=['GET'])
 def fetch_owner_by_id(owner_id):
+    print(owner_id)
     try:
         owner = get_owner_by_id(owner_id)
         if owner:
@@ -36,7 +35,6 @@ def get_all_owners_properties(owner_id):
             return jsonify({"status": "error", "message": "Owner not found"}), 404
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
 
 @search_blueprint.route('/tradeProperties/<int:property1_id>/<int:property2_id>', methods=['PUT'])
 def trade_properties(property1_id, property2_id):
@@ -105,5 +103,14 @@ def fetch_owner_by_name():
             return jsonify({"status": "error", "message": "Owner not found"}), 404
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
-
-
+   
+@search_blueprint.route('/owners/<int:owner_id>/subareas', methods=['GET'])
+def fetch_area_adject_properties_by_owner(owner_id):
+    try:
+        owner = get_area_adject_properties_by_owner(owner_id)
+        if owner:
+            return jsonify({"status": "success", "data": owner}), 200
+        else:
+            return jsonify({"status": "error", "message": "Owner not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500

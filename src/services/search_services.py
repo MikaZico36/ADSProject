@@ -1,8 +1,7 @@
 from xml.sax.handler import all_properties
 
 from neo4j import GraphDatabase
-
-from src.services.db_config import neo4j_config
+from db_config import neo4j_config
 import time
 
 def get_owner_by_id(owner_id):
@@ -144,15 +143,9 @@ def get_mean_area_by_owner(owner_id):
         ).single()
 
         driver.close()
-
         if result and result["mean_area"] is not None:
             return result["mean_area"]
         return None
-
-
-
-
-
 
 #Calcula a área de uma propriedade
 def calculate_total_area(property_ids):
@@ -173,8 +166,7 @@ def calculate_total_area(property_ids):
 
     driver.close()
     return total_area
-    
-
+        
 def get_area_adject_properties_by_owner(owner_id):
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
     with driver.session() as session:
@@ -188,32 +180,33 @@ def get_area_adject_properties_by_owner(owner_id):
 
         property_ids = result["property_ids"]
 
-        total_property_areas = 1
-        adjacent_property_areas = []
-        
-        adjacent = []
-        while property_ids:   
-            for property_id in property_ids:
-                result = session.run(
-                    """
-                    MATCH (p:Property {object_id: $property_id})-[:ADJACENT_TO*0..]-(neighbor)
-                    RETURN DISTINCT neighbor.object_id AS adjacent_properties
-
-                    """,
-                    property_id=property_id
-                ).single()
-                teste = [record["adjacent_properties"] for record in result]
-                print(teste)
-                property = result["adjacent_properties"]
-                if property in property_ids:
-                    adjacent.append(property)
-            
-            adjacent_property_areas.append((total_property_areas, calculate_total_area(adjacent)))
-            total_property_areas =+ 1
-            adjacent = []
-                    
+        result = session.run(
+                """
+                UNWIND $property_ids AS prop_id
+                MATCH (p1:Property {object_id: prop_id})-[:ADJACENT_TO]-(p2:Property)
+                WHERE p2.object_id IN $property_ids
+                RETURN DISTINCT p1.object_id AS property_id_1, p2.object_id AS property_id_2
+                """,
+                property_ids=property_ids
+            )
+        pairs = set(tuple(sorted((record["property_id_1"], record["property_id_2"]))) for record in result)
         driver.close()
-        print(adjacent_property_areas)
+        
+        index = 1
+        adjacent_property_areas = []
+
+        for pair in pairs:
+            total_area = calculate_total_area(list(pair))
+            adjacent_property_areas.append({"subarea_id": index, "area": total_area})
+            index += 1
+            property_ids.remove(pair[0])
+            property_ids.remove(pair[1])
+
+        for property_id in property_ids:
+            total_area = calculate_total_area([property_id])
+            adjacent_property_areas.append({"subarea_id": index, "area": total_area})
+            index += 1
+        
         return adjacent_property_areas
 
 #Conta os elementos em comum em duas listas
@@ -307,8 +300,6 @@ def trade_owners_properties(property1_id, property2_id):
         return True
     else:
         return False
-
-
 
 if __name__ == "__main__":
 

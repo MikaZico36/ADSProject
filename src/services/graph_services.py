@@ -7,7 +7,7 @@ import fiona
 import json
 import geojson
 from neo4j import GraphDatabase
-from src.services.db_config import neo4j_config
+from db_config import neo4j_config
 from concurrent.futures import ThreadPoolExecutor
 from names_generator import generate_name
 import random
@@ -231,10 +231,11 @@ if __name__ == "__main__":
     file_path = "src/data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson"
 
     start = time.time()
+
     create_properties(file_path)
     create_property_relationships(file_path)
     create_owners(100)
-    create_ownership_relationships("user_choice")
+    create_ownership_relationships("uniform")
 
     end = time.time()
     print(f"Tempo total: {end - start}")
