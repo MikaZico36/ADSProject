@@ -15,7 +15,6 @@ def get_all_owners():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
 @search_blueprint.route('/owners/<int:owner_id>', methods=['GET'])
 def fetch_owner_by_id(owner_id):
     try:
@@ -27,6 +26,40 @@ def fetch_owner_by_id(owner_id):
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@search_blueprint.route('/ownersProperties/<int:owner_id>', methods=['GET'])
+def get_all_owners_properties(owner_id):
+    try:
+        owner = get_properties_by_ownerId(owner_id)
+        if owner:
+            return jsonify({"status": "success", "data": owner}), 200
+        else:
+            return jsonify({"status": "error", "message": "Owner not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@search_blueprint.route('/tradeProperties/<int:property1_id>/<int:property2_id>', methods=['PUT'])
+def trade_properties(property1_id, property2_id):
+    try:
+        result = trade_owners_properties(property1_id, property2_id)
+        if result:
+            return jsonify({"status": "success", "data": result}), 200
+        else:
+            return jsonify({"status": "error", "message": "Trade properties not possible"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@search_blueprint.route('/changePropertyOwner/<int:owner_id>/<int:property_id>', methods=['PUT'])
+def change_owner_property(owner_id, property_id):
+    try:
+        result = update_property_owner(owner_id, property_id)
+        if result:
+            return jsonify({"status": "success", "data": result}), 200
+        else:
+            return jsonify({"status": "error", "message": "Owner not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @search_blueprint.route('/totalArea/<int:owner_id>', methods=['GET'])
 def get_total_area(owner_id):
