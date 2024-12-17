@@ -1,7 +1,7 @@
 from xml.sax.handler import all_properties
 
 from neo4j import GraphDatabase
-from db_config import neo4j_config
+from src.services.db_config import neo4j_config
 import time
 
 def get_owner_by_id(owner_id):
@@ -301,6 +301,49 @@ def trade_owners_properties(property1_id, property2_id):
     else:
         return False
 
+
+def verify_neighbors_owner(property_id, owner_id):
+    property1_neighbors = get_property_with_adjacents(property_id)['adjacent_properties']
+
+    for property in property1_neighbors:
+        owner_property_id = get_property_owner_by_propertyId(property)
+        if owner_property_id == owner_id:
+            return False
+
+    return True
+
+
+
+#Método que dado dois owners sugere possíveis trocas de terrenos que possam ocorrem
+#Essas trocas levam em conta vizinhos pertencentes ao mesmo dono e ainda variações muito altas nas áreas
+def suggestion_properties_trades(owner1_id,owner2_id):
+    suggestions_list= []
+    aux1_properties=[]
+    aux2_properties=[]
+    owner1_properties = get_properties_by_ownerId(owner1_id)['properties']
+    owner2_properties = get_properties_by_ownerId(owner2_id)['properties']
+    for property_owner1 in owner1_properties:
+        property_owner1_neighbours = get_property_with_adjacents(property_owner1)['adjacent_properties']
+        aux = list(set(property_owner1_neighbours) & set(owner2_properties))
+
+        if len(aux) > 0 and verify_neighbors_owner(property_owner1,owner1_id):
+            aux1_properties.append((owner1_id, property_owner1,get_property_area(property_owner1)['area']))
+            for property_owner2 in aux:
+                if verify_neighbors_owner(property_owner2,owner2_id):
+                    aux2_properties.append((property_owner1, owner2_id, property_owner2, get_property_area(property_owner2)['area']))
+
+
+
+    for property1 in aux1_properties:
+        for property2 in aux2_properties:
+            if property1[1] != property2[0] and abs(property1[2]-property2[3]) < 300:
+                suggestions_list.append({
+                    "owner1": {"owner1_id": property1[0], "property_id_owner1": property1[1]},
+                    "owner2": {"owner2_id": property2[1], "property_id_owner2": property2[2]}
+                })
+    return suggestions_list
+
+
 if __name__ == "__main__":
 
     start = time.time()
@@ -309,8 +352,8 @@ if __name__ == "__main__":
     #print(get_property_owner_by_propertyId(4084))
     #print(get_property_owner_by_propertyId(4786))
     #print(get_property_owner_by_propertyId(4787))
-    update_property_owner(1,4385)
-    update_property_owner(96,4084)
+    #update_property_owner(1,4385)
+    #update_property_owner(96,4084)
 
     #print(109)
     #print(get_property_area(109))
@@ -318,7 +361,7 @@ if __name__ == "__main__":
 
     #print("Vamos ver as áreas")
     #teste(96,3800,4400)
-
+    print(suggestion_properties_trades(1,10))
     #print(trade_properties(4385,4084))
     end = time.time()
     print(f"Tempo total: {end - start}")
