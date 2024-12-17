@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import FileField, SubmitField
 import os
 from wtforms.validators import InputRequired
-from src.services.graph_services import save_file
+from services.graph_services import save_file
 
 graph_blueprint = Blueprint('graph_routes', __name__)
 class UploadFileForm(FlaskForm):
