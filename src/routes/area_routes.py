@@ -66,18 +66,6 @@ def fetch_mean_area_by_owner(owner_id):
         return jsonify({"status": "error", "message": str(e)}), 500
     
 
-@area_blueprint.route('/sub/owner/<int:owner_id>', methods=['GET'])
-def fetch_area_adject_properties_by_owner(owner_id):
-    try:
-        owner = get_area_adject_properties_by_owner(owner_id)
-        if owner:
-            return jsonify({"status": "success", "data": owner}), 200
-        else:
-            return jsonify({"status": "error", "message": "Owner not found"}), 404
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
 @area_blueprint.route('/sub', methods=['GET'])
 def fetch_subarea():
     try:
@@ -94,3 +82,14 @@ def fetch_subarea():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@area_blueprint.route('/sub/owner/<int:owner_id>', methods=['GET'])
+def fetch_area_adject_properties_by_owner(owner_id):
+    try:
+        owner = get_area_adject_properties_by_owner(owner_id)
+        if owner:
+            return jsonify({"status": "success", "data": owner}), 200
+        else:
+            return jsonify({"status": "error", "message": "Owner not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
