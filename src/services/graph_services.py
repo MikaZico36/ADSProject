@@ -12,6 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 from names_generator import generate_name
 import random
 import time
+import pandas as pd
 
 
 def save_file(file, upload_folder):
@@ -226,16 +227,55 @@ def create_ownership_relationships(distribution):
     driver.close()
 
 
+def export_to_excel():
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+    with driver.session() as session:
+        result_nodes = session.run(
+            """
+            MATCH (n)
+            RETURN DISTINCT labels(n) AS labels, n AS properties
+            """
+        )
+        nodes = []
+        for record in result_nodes:
+            node_data = {"Labels": ";".join(record["labels"])}  # Junta múltiplos labels
+            node_data.update(record["properties"]._properties)  # Adiciona as propriedades
+            nodes.append(node_data)
+        
+        result_relationships = session.run(
+            """
+            MATCH (n)-[r]->(m)
+            RETURN id(n) AS source_id, type(r) AS relationship, id(m) AS target_id, r AS properties
+            """
+        )
+        relationships = []
+        for record in result_relationships:
+                rel_data = {
+                    "Source_ID": record["source_id"],
+                    "Relationship_Type": record["relationship"],
+                    "Target_ID": record["target_id"],
+                }
+                rel_data.update(record["properties"]._properties)  # Adiciona propriedades da relação
+                relationships.append(rel_data)   
+    driver.close()
+
+    nodes_df = pd.DataFrame(nodes)
+    relationships_df = pd.DataFrame(relationships)
+    with pd.ExcelWriter('src/data_files/output_files/output.xlsx') as writer:
+        nodes_df.to_excel(writer, sheet_name="Nodes", index=False)
+        relationships_df.to_excel(writer, sheet_name="Relationships", index=False)
+
 
 if __name__ == "__main__":
     file_path = "src/data_files/input_files/Acores_Grupo_Ocidental_Parcelas_az_oc.geojson"
 
     start = time.time()
 
-    create_properties(file_path)
-    create_property_relationships(file_path)
-    create_owners(100)
-    create_ownership_relationships("uniform")
+    #create_properties(file_path)
+    #create_property_relationships(file_path)
+    #create_owners(100)
+    #create_ownership_relationships("uniform")
+    export_to_excel()
 
     end = time.time()
     print(f"Tempo total: {end - start}")
