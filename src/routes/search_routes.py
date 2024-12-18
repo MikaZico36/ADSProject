@@ -1,7 +1,7 @@
 from re import search
 
 from flask import Blueprint, request, jsonify
-from services.search_services import *
+from src.services.search_services import *
 search_blueprint = Blueprint('search_routes', __name__)
 
 
@@ -87,6 +87,29 @@ def get_mean_area(owner_id):
     except Exception as e:
         print(f"Exception occurred: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+@search_blueprint.route('/suggestionTradeProperties/<int:owner1_id>/<int:owner2_id>', methods=['GET'])
+def get_suggestion_trade_properties(owner1_id, owner2_id):
+    try:
+        result = suggestion_properties_trades(owner1_id, owner2_id)
+
+        if result:
+            return jsonify({"status": "success", "data": result}), 200
+        else:
+            return jsonify({"status": "error", "message": "Trade properties not possible"}), 404
+    except Exception as e:
+        print(f"Exception occurred: {str(e)}")
+
+@search_blueprint.route('/suggestionTradePropertiesAllUsers', methods=['GET'])
+def get_all_possible_properties_trades():
+    try:
+        result = get_suggestions_for_all_owner()
+        if result:
+            return jsonify({"status": "success", "data": result}), 200
+        else:
+            return jsonify({"status": "error", "message": "Trade properties not possible"}), 404
+    except Exception as e:
+        print(f"Exception occurred: {str(e)}")
 
 
 @search_blueprint.route('/owners/search', methods=['GET'])

@@ -5,6 +5,7 @@ import os
 from wtforms.validators import InputRequired
 from services.graph_services import save_file, export_to_excel
 
+
 graph_blueprint = Blueprint('graph_routes', __name__)
 class UploadFileForm(FlaskForm):
     file = FileField("File", validators=[InputRequired()])
