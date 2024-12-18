@@ -26,6 +26,17 @@ def get_suggestion_trade_properties(owner1_id, owner2_id):
     except Exception as e:
         print(f"Exception occurred: {str(e)}")
 
+@trades_blueprint.route('/sugestion/trade/<int:owner1_id>/<int:owner2_id>', methods=['GET'])
+def get_suggestion_and_trade_properties(owner1_id, owner2_id):
+    try:
+        result = suggestion_and_trade_properties(owner1_id, owner2_id)
+        if result:
+            return jsonify({"status": "success", "message": "Properties traded successfully"}), 200
+        else:
+            return jsonify({"status": "error", "message": "Trade properties not possible"}), 404
+    except Exception as e:
+        print(f"Exception occurred: {str(e)}")
+
 @trades_blueprint.route('/sugestions/allUsers', methods=['GET'])
 def get_all_possible_properties_trades():
     try:

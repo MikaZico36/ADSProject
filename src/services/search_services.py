@@ -2,7 +2,7 @@ from neo4j import GraphDatabase
 from db_config import neo4j_config
 import time
 
-from src.services.area_services import get_property_area
+from services.area_services import get_property_area
 
 
 def get_owner_by_id(owner_id):
