@@ -1,6 +1,22 @@
 from neo4j import GraphDatabase
 from db_config import neo4j_config
-from services.search_services import check_neighbors
+
+
+def check_neighbors(properties):
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+    with driver.session() as session:
+        result = session.run(
+            """
+            UNWIND $properties AS prop_id
+            MATCH (p1:Property {object_id: prop_id})-[:ADJACENT_TO]-(p2:Property)
+            WHERE p2.object_id IN $properties
+            RETURN DISTINCT p1.object_id AS property_id_1, p2.object_id AS property_id_2
+            """,
+            properties=properties
+        )
+        pairs = set(tuple(sorted((record["property_id_1"], record["property_id_2"]))) for record in result)
+        driver.close()
+        return pairs
 
 
 def get_property_area(property_id):

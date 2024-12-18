@@ -2,6 +2,9 @@ from neo4j import GraphDatabase
 from db_config import neo4j_config
 import time
 
+from src.services.area_services import get_property_area
+
+
 def get_owner_by_id(owner_id):
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
 
@@ -187,13 +190,35 @@ def verify_neighbors_owner(property_id, owner_id):
 if __name__ == "__main__":
 
     start = time.time()
-    #print(get_property_area(4385))
-    #print(get_property_with_adjacents(4385))
-    #print(get_property_owner_by_propertyId(4084))
-    #print(get_property_owner_by_propertyId(4786))
+    print(get_property_with_adjacents(4385))
+    print(get_property_with_adjacents(4084))
+
+    print(get_property_owner_by_propertyId(4084))
+    print(get_property_owner_by_propertyId(4385))
     #print(get_property_owner_by_propertyId(4787))
     #update_property_owner(1,4385)
     #update_property_owner(96,4084)
+
+    print(get_property_area(4084))
+    print(get_property_area(4085))
+    print(get_property_area(4095))
+    print(get_property_area(3827))
+    print(get_property_area(3476))
+    print(get_property_area(3976))
+    print(get_property_area(3482))
+    print(get_property_area(3577))
+    print(get_property_area(3484))
+    print(get_property_area(3582))
+
+    print("GGGGGGG")
+
+    print(get_property_area(4385))
+    print(get_property_area(4618))
+    print(get_property_area(4786))
+    print(get_property_area(4787))
+
+
+
 
     #print(109)
     #print(get_property_area(109))
@@ -209,6 +234,11 @@ if __name__ == "__main__":
 
     #print(trade_properties(4385,4084))
     #get_suggestions_for_all_owner()
+    update_property_owner(71,4084)
+    update_property_owner(60,4385)
+
+    print(get_property_owner_by_propertyId(4084))
+    print(get_property_owner_by_propertyId(4385))
 
     end = time.time()
     print(f"Tempo total: {end - start}")
