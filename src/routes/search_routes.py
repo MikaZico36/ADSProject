@@ -112,8 +112,6 @@ def get_all_possible_properties_trades():
         print(f"Exception occurred: {str(e)}")
 
 
-
-
 @search_blueprint.route('/owners/search', methods=['GET'])
 def fetch_owner_by_name():
     try:

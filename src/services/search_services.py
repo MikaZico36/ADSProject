@@ -356,6 +356,7 @@ def get_suggestions_for_all_owner():
     return suggestions_list
 
 
+
 if __name__ == "__main__":
 
     start = time.time()
@@ -373,7 +374,9 @@ if __name__ == "__main__":
 
     #print("Vamos ver as áreas")
     #teste(96,3800,4400)
+
     #print(suggestion_properties_trades(1,51))
+
     #print(trade_properties(4385,4084))
     get_suggestions_for_all_owner()
     end = time.time()
