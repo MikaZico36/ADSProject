@@ -2,6 +2,7 @@ from neo4j import GraphDatabase
 from db_config import neo4j_config
 from services.search_services import check_neighbors
 
+
 def get_property_area(property_id):
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
     with driver.session() as session:
@@ -14,6 +15,24 @@ def get_property_area(property_id):
         ).single()
         driver.close()
         return area
+    
+
+def calculate_total_area():
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH (p:Property)
+            RETURN sum(p.shape_area) AS total_area
+            """
+        ).single()
+
+        driver.close()
+
+        if result and result["total_area"] is not None:
+            return result["total_area"]
+        return None
+
 
 #Calcula a área total de todos os terrenos de um determinado dono
 def get_total_area_by_owner(owner_id):
@@ -34,6 +53,22 @@ def get_total_area_by_owner(owner_id):
         return None
 
 
+def get_mean_area():
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH (p:Property)
+            RETURN avg(p.shape_area) AS mean_area
+            """
+        ).single()
+
+        driver.close()
+        if result and result["mean_area"] is not None:
+            return result["mean_area"]
+        return None
+
+
 def get_mean_area_by_owner(owner_id):
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
     with driver.session() as session:
@@ -50,25 +85,6 @@ def get_mean_area_by_owner(owner_id):
             return result["mean_area"]
         return None
 
-#Calcula a área de uma propriedade
-def calculate_total_area(property_ids):
-    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
-
-    with driver.session() as session:
-        result = session.run(
-            """
-            MATCH (p:Property)
-            WHERE p.object_id IN $property_ids
-            RETURN sum(p.shape_area) AS total_area
-            """,
-            property_ids=property_ids
-        ).single()
-
-        total_area = result["total_area"] if result and result["total_area"] else 0.0
-        print(total_area)
-
-    driver.close()
-    return total_area
 
 def get_area_adject_properties_by_owner(owner_id):
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))

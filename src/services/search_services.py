@@ -1,5 +1,3 @@
-from xml.sax.handler import all_properties
-
 from neo4j import GraphDatabase
 from db_config import neo4j_config
 import time
@@ -115,8 +113,6 @@ def check_neighbors(properties):
         driver.close()
         return pairs
 
-
-
 #Conta os elementos em comum em duas listas
 def count_same_elements(properties_neighbors, properties_owner):
     count = sum(1 for item in properties_owner if item in properties_neighbors)
@@ -134,7 +130,7 @@ def get_property_owner_by_propertyId(propertyId):
             propertyId=propertyId
         ).single()
     driver.close()
-    return property1_owner['owner_id']
+    return property1_owner
 
 #Através do Id do owner devolve a lista de todas as suas propriedades
 def get_properties_by_ownerId(ownerId):

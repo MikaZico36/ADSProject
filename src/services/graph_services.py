@@ -227,6 +227,14 @@ def create_ownership_relationships(distribution):
     driver.close()
 
 
+def upload_file(file, upload_folder, distribuition):
+    file_path = save_file(file, upload_folder)
+    create_properties(file_path[0])
+    create_property_relationships(file_path[0])
+    create_owners(100)
+    create_ownership_relationships(distribuition)
+
+
 def export_to_excel():
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
     with driver.session() as session:
@@ -238,8 +246,8 @@ def export_to_excel():
         )
         nodes = []
         for record in result_nodes:
-            node_data = {"Labels": ";".join(record["labels"])}  # Junta múltiplos labels
-            node_data.update(record["properties"]._properties)  # Adiciona as propriedades
+            node_data = {"Labels": ";".join(record["labels"])} 
+            node_data.update(record["properties"]._properties)  
             nodes.append(node_data)
         
         result_relationships = session.run(
@@ -250,20 +258,28 @@ def export_to_excel():
         )
         relationships = []
         for record in result_relationships:
-                rel_data = {
-                    "Source_ID": record["source_id"],
-                    "Relationship_Type": record["relationship"],
-                    "Target_ID": record["target_id"],
-                }
-                rel_data.update(record["properties"]._properties)  # Adiciona propriedades da relação
-                relationships.append(rel_data)   
+            rel_data = {
+                "Source_ID": record["source_id"],
+                "Relationship_Type": record["relationship"],
+                "Target_ID": record["target_id"],
+            }
+            rel_data.update(record["properties"]._properties)  # Adiciona propriedades da relação
+            relationships.append(rel_data)
+    
     driver.close()
 
     nodes_df = pd.DataFrame(nodes)
     relationships_df = pd.DataFrame(relationships)
-    with pd.ExcelWriter('src/data_files/output_files/output.xlsx') as writer:
+
+    output_folder = "src/data_files/output_files"
+    os.makedirs(output_folder, exist_ok=True) 
+    file_path = os.path.join(output_folder, "output.xlsx")
+
+    with pd.ExcelWriter(file_path) as writer:
         nodes_df.to_excel(writer, sheet_name="Nodes", index=False)
         relationships_df.to_excel(writer, sheet_name="Relationships", index=False)
+
+    return file_path
 
 
 if __name__ == "__main__":

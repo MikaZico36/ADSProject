@@ -1,48 +1,51 @@
-from flask import Blueprint, request, jsonify, send_file ,render_template, current_app
-from flask_wtf import FlaskForm
-from wtforms import FileField, SubmitField
+from flask import Blueprint, request, jsonify, current_app, send_from_directory
 import os
-from wtforms.validators import InputRequired
-from services.graph_services import save_file, export_to_excel
+from services.graph_services import upload_file, export_to_excel
 
 
 graph_blueprint = Blueprint('graph_routes', __name__)
-class UploadFileForm(FlaskForm):
-    file = FileField("File", validators=[InputRequired()])
-    submit = SubmitField("Upload File")
 
-#FUNÇÃO PRECISA DE SER ALTERADA 
-@graph_blueprint.route('/upload', methods=['GET', 'POST'])
-def upload_file():
-    form = UploadFileForm()
-    if form.validate_on_submit():
-        file = form.file.data
-        upload_folder = os.path.join(os.path.abspath(os.path.dirname(__file__)), current_app.config['UPLOAD_FOLDER'])
-        file_path = save_file(file, upload_folder)
+@graph_blueprint.route('/upload', methods=['POST'])
+def upload():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"status": "error", "message": "No file part in the request"}), 400
         
-        if isinstance(file_path, tuple): 
-            return file_path
-         
-        return render_template('popup.html', message="File has been uploaded.")
-    return render_template('read_files.html', form=form)
+        file = request.files['file']
+        distribution = request.form['distribution']
 
-#o ficheiro é criado mas nao é exportado
-@graph_blueprint.route('/export', methods=['GET'])
+        if distribution != 'user_choice' and distribution != 'uniform':
+            return jsonify({"status": "error", "message": "Invalid distribution"}), 400
+        
+        if file.filename == '':
+            return jsonify({"status": "error", "message": "No selected file"}), 400
+        
+        upload_folder = current_app.config['UPLOAD_FOLDER']
+        os.makedirs(upload_folder, exist_ok=True)
+
+        upload_file(file, upload_folder, distribution)
+        
+        return jsonify({"status": "success", "message": "Graph structure created successfully"}), 200
+    
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+    
+
+@graph_blueprint.route('/download', methods=['GET'])
 def export():
     try:
-        output_file = 'src/data_files/output_files/output.xlsx'
-        export_to_excel()
-        
-        return send_file(
-            output_file,
-            as_attachment=True,
-            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            download_name="neo4j_export.xlsx"
-        )
-     
+       
+        file_path = export_to_excel()
+       
+        if not os.path.exists(file_path):
+            return jsonify({"status": "error", "message": "File not found"}), 404
+
+        return jsonify({"status": "success", "message": f"Graph structure save in {file_path}"}), 200
+    
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
    
 
-    
+        
+        
