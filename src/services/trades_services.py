@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 from db_config import neo4j_config
-from search_services import get_property_owner_by_propertyId, get_property_with_adjacents, get_properties_by_ownerId, count_same_elements, update_property_owner, verify_neighbors_owner, get_owners
-from area_services import calculate_total_area, get_property_area
+from services.search_services import get_property_owner_by_propertyId, get_property_with_adjacents, get_properties_by_ownerId, count_same_elements, update_property_owner, verify_neighbors_owner, get_owners
+from services.area_services import calculate_total_area, get_property_area
 
 #Responsável por fazer trocas de terrenos caso esta seja benéfica a nível de aumento de vizinho para ambos os proprietários
 #Testar Dono 1 -> 4385    Dono 96 -> 4084
