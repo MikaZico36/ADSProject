@@ -79,3 +79,28 @@ def fetch_owner_by_property(property_id):
             return jsonify({"status": "error", "message": "Owner not found"}), 404
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@search_blueprint.route('/property/polygon', methods=['GET'])
+def fetch_all_polygons():
+    try:
+        
+        poligons = get_all_polygons()
+        if poligons:
+            return jsonify({"status": "success", "data": poligons}), 200
+        else:
+            return jsonify({"status": "error", "message": "Properties not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+ 
+    
+@search_blueprint.route('/property/polygon/<int:property_id>', methods=['GET'])
+def fetch_polygon_by_property_id(property_id):
+    try:
+        poligon = get_polygon_by_property_id(property_id)
+        if poligon:
+            return jsonify({"status": "success", "data": poligon}), 200
+        else:
+            return jsonify({"status": "error", "message": "Property not found"}), 404
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500

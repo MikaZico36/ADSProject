@@ -187,6 +187,44 @@ def verify_neighbors_owner(property_id, owner_id):
 
     return True
 
+
+def get_polygon_by_property_id(property_id):
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+    with driver.session() as session:
+        result = session.run(
+            """
+            MATCH (p:Property {object_id: $property_id})
+            RETURN p.multipolygon AS multipolygon
+            """,
+            property_id=property_id
+        ).single()
+
+    driver.close()
+    
+    if result:
+        return result["multipolygon"]
+    else:
+        return None
+    
+
+def get_all_polygons():
+    driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
+    with driver.session() as session:
+        results = session.run(
+            """
+            MATCH (p:Property)
+            RETURN p.object_id AS property_id, p.multipolygon AS multipolygon
+            """
+        )
+        
+        polygons = [
+            {"property_id": record["property_id"], "multipolygon": record["multipolygon"]}
+            for record in results
+        ]
+
+    driver.close()
+    return polygons
+
 if __name__ == "__main__":
 
     start = time.time()
