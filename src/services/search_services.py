@@ -33,9 +33,9 @@ def get_owners():
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
 
     with driver.session() as session:
-        owners = session.run("MATCH (o:Owner) RETURN o.owner_id, o.name").data()
+        owners = session.run("MATCH (o:Owner) RETURN o.owner_id AS owner_id, o.name AS owner_name").data()
     driver.close()
-    
+
     return owners
 
 def get_properties():
@@ -150,7 +150,7 @@ def get_mean_area_by_owner(owner_id):
 #Calcula a área de uma propriedade
 def calculate_total_area(property_ids):
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
-    
+
     with driver.session() as session:
         result = session.run(
             """
@@ -160,13 +160,13 @@ def calculate_total_area(property_ids):
             """,
             property_ids=property_ids
         ).single()
-        
+
         total_area = result["total_area"] if result and result["total_area"] else 0.0
         print(total_area)
 
     driver.close()
     return total_area
-        
+
 def get_area_adject_properties_by_owner(owner_id):
     driver = GraphDatabase.driver(neo4j_config["uri"], auth=(neo4j_config["username"], neo4j_config["password"]))
     with driver.session() as session:
@@ -191,7 +191,7 @@ def get_area_adject_properties_by_owner(owner_id):
             )
         pairs = set(tuple(sorted((record["property_id_1"], record["property_id_2"]))) for record in result)
         driver.close()
-        
+
         index = 1
         adjacent_property_areas = []
 
@@ -206,7 +206,7 @@ def get_area_adject_properties_by_owner(owner_id):
             total_area = calculate_total_area([property_id])
             adjacent_property_areas.append({"subarea_id": index, "area": total_area})
             index += 1
-        
+
         return adjacent_property_areas
 
 #Conta os elementos em comum em duas listas
@@ -343,6 +343,19 @@ def suggestion_properties_trades(owner1_id,owner2_id):
                 })
     return suggestions_list
 
+#Faz a comparação entre todos os owners para encontrar as melhores trocas
+def get_suggestions_for_all_owner():
+    all_owners = get_owners()
+    suggestions_list = []
+    for i, owner in enumerate(all_owners):
+        for owner2 in all_owners[i + 1:]:
+            a = suggestion_properties_trades(owner['owner_id'], owner2['owner_id'])
+            print(f"Owner: {owner} Owner2: {owner2}")
+            if len(a) > 0:
+                suggestions_list.append(a)
+    return suggestions_list
+
+
 
 if __name__ == "__main__":
 
@@ -361,7 +374,10 @@ if __name__ == "__main__":
 
     #print("Vamos ver as áreas")
     #teste(96,3800,4400)
-    print(suggestion_properties_trades(1,10))
+
+    #print(suggestion_properties_trades(1,51))
+
     #print(trade_properties(4385,4084))
+    get_suggestions_for_all_owner()
     end = time.time()
     print(f"Tempo total: {end - start}")
