@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.trades_services import *
+from src.services.trades_services import *
 
 trades_blueprint = Blueprint('trade_routes', __name__)
 

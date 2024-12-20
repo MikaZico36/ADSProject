@@ -7,7 +7,7 @@ import fiona
 import json
 import geojson
 from neo4j import GraphDatabase
-from services.db_config import neo4j_config
+from src.services.db_config import neo4j_config
 from concurrent.futures import ThreadPoolExecutor
 from names_generator import generate_name
 import random

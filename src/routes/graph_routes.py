@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app, send_from_directory
 import os
-from services.graph_services import upload_file, export_to_excel
+from src.services.graph_services import upload_file, export_to_excel
 
 
 graph_blueprint = Blueprint('graph_routes', __name__)
