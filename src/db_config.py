@@ -1,5 +1,5 @@
 neo4j_config = {
-    "uri": "bolt://3.215.179.4",
+    "uri": "bolt://35.172.114.97",
     "username": "neo4j",
-    "password":"plugs-tracks-acres"
+    "password":"payments-sex-west"
 }
